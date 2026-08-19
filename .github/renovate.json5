@@ -1,0 +1,172 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+
+  extends: [
+    "config:recommended",
+    ":semanticCommits",
+  ],
+
+  // Every dependency is pinned to an exact version, in every repo. A range means
+  // the version you get depends on when you install: CI, a laptop and a release
+  // build can each resolve differently, and a bad upstream release lands without
+  // a PR anyone reviewed. Pinning turns each upgrade into a reviewable PR that CI
+  // has to pass -- which is the point, not extra noise.
+  //
+  // Renovate raises "Pin dependencies" PRs for anything that regresses to a range.
+  rangeStrategy: "pin",
+
+  semanticCommits: "enabled",
+  semanticCommitType: "chore",
+  semanticCommitScope: "{{datasource}}",
+
+  automergeType: "pr",
+  platformAutomerge: true,
+
+  branchPrefix: "renovate",
+
+  addLabels: [
+    "bot-renovate",
+  ],
+
+  stopUpdatingLabel: "bot-renovate-stop",
+
+  dependencyDashboard: false,
+
+  prConcurrentLimit: 10,
+  prHourlyLimit: 5,
+
+  separateMajorMinor: true,
+  separateMultipleMajor: true,
+
+  "git-submodules": {
+    enabled: true,
+  },
+
+  lockFileMaintenance: {
+    enabled: true,
+  },
+
+  vulnerabilityAlerts: {
+    enabled: true,
+    addLabels: ["security"],
+  },
+
+  osvVulnerabilityAlerts: true,
+
+  // Tool versions pinned inside workflows and composite actions are invisible to
+  // every built-in manager -- there is no manifest for them -- so they sit frozen
+  // while everything with a package file keeps moving. The `# renovate:` comment
+  // above each one is what makes it a tracked dependency.
+  //
+  // Not the customManagers:githubActionsVersions preset: that requires the value
+  // to sit on a `SOMETHING_VERSION:` key, and these are action-input `default:`s.
+  customManagers: [
+    {
+      customType: "regex",
+      managerFilePatterns: [
+        "/^\\.github/actions/.+/action\\.ya?ml$/",
+        "/^\\.github/workflows/.+\\.ya?ml$/",
+      ],
+      matchStrings: [
+        "# renovate: datasource=(?<datasource>[a-z-]+?) depName=(?<depName>\\S+)\\s+default: \"(?<currentValue>[^\"]+)\"",
+        "# renovate: datasource=(?<datasource>[a-z-]+?) depName=(?<depName>\\S+)\\s+VERSION=\"(?<currentValue>[^\"]+)\"",
+        "# renovate: datasource=(?<datasource>[a-z-]+?) depName=(?<depName>\\S+)\\s+[^\\n]*?(?:==|@)(?<currentValue>[0-9][^\\s\"']*)",
+      ],
+    },
+  ],
+
+  packageRules: [
+
+    // =====================================================
+    // Version constraints
+    // =====================================================
+
+    {
+      // typescript-eslint declares `typescript: ">=4.8.4 <6.1.0"` -- every
+      // published version of it, including the latest. TypeScript 6.1+ therefore
+      // fails a clean install, which is what CI runs, even though a plain install
+      // will happily produce a lockfile by overriding the peer range. Lift when
+      // typescript-eslint widens its peer dependency.
+      matchDepNames: ["typescript"],
+      matchManagers: ["npm"],
+      allowedVersions: "<6.1",
+    },
+
+    // =====================================================
+    // Version classification labels
+    // =====================================================
+
+    {
+      matchUpdateTypes: ["major"],
+      addLabels: ["renovate-version-major"],
+      minimumReleaseAge: "7 days",
+    },
+    {
+      matchUpdateTypes: ["minor"],
+      addLabels: ["renovate-version-minor"],
+      automerge: true,
+      minimumReleaseAge: "3 days",
+    },
+    {
+      matchUpdateTypes: ["patch"],
+      addLabels: ["renovate-version-patch"],
+      automerge: true,
+      minimumReleaseAge: "3 days",
+    },
+    {
+      matchUpdateTypes: ["digest"],
+      addLabels: ["renovate-version-digest"],
+    },
+
+    // =====================================================
+    // Ecosystem classification labels
+    // =====================================================
+
+    {
+      matchDatasources: ["docker"],
+      addLabels: ["renovate-type-container"],
+    },
+
+    {
+      matchDatasources: ["node-version", "npm"],
+      addLabels: ["renovate-type-node"],
+    },
+
+    {
+      matchDatasources: ["pypi"],
+      addLabels: ["renovate-type-python"],
+    },
+
+    {
+      matchDatasources: ["github-releases", "github-tags"],
+      addLabels: ["renovate-type-cicd"],
+    },
+
+    {
+      matchManagers: ["github-actions"],
+      semanticCommitType: "chore",
+      semanticCommitScope: "github-actions",
+      addLabels: ["renovate-type-cicd"],
+      // GitHub Actions use major version tags (v3 -> v4) for routine updates;
+      // auto-merge these when all checks pass.
+      automerge: true,
+    },
+
+    // Third-party actions are pinned to a commit digest, first-party ones are
+    // not. The split is deliberate: a `v4` tag is mutable, so trusting one from
+    // an account outside this org means trusting whoever can move it -- which is
+    // what CodeQL's actions/unpinned-tag flags. GitHub's own `actions/*` sit
+    // inside the same trust boundary as the runner, and pinning them would
+    // replace the major-tag automerge above with a digest bump per action per
+    // week for no change in exposure.
+    //
+    // Renovate keeps the digests current and rewrites the `# vX.Y.Z` comment
+    // alongside them, so the pins do not silently rot.
+    {
+      matchManagers: ["github-actions"],
+      matchPackageNames: ["!/^(actions|github)\\//", "!/^Malmo-Skyttegille-Pistolsektionen\\//"],
+      pinDigests: true,
+      addLabels: ["renovate-type-cicd"],
+    },
+  ],
+}
