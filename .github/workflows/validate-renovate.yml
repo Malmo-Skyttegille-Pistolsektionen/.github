@@ -27,4 +27,4 @@ jobs:
           docker run --rm \
             -v "$GITHUB_WORKSPACE:/repo" \
             "renovate/renovate:$VERSION" \
-            renovate-config-validator /repo/.github/renovate.json5
+            renovate-config-validator --strict /repo/.github/renovate.json5
