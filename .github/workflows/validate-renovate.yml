@@ -2,14 +2,11 @@ name: Validate Renovate config
 
 on:
   push:
-    paths:
-      - ".github/renovate.json5"
-      # so a change to the check itself is exercised by the check
-      - ".github/workflows/validate-renovate.yml"
+  # No paths filter. This is a required check on the default branch, and a
+  # required check that does not run never reports, blocking the pull request
+  # forever. The job is a docker pull and a validate -- cheap enough to run on
+  # a README-only change rather than make the gate conditional.
   pull_request:
-    paths:
-      - ".github/renovate.json5"
-      - ".github/workflows/validate-renovate.yml"
 
 permissions:
   contents: read
@@ -26,7 +23,7 @@ jobs:
       - name: Validate .github/renovate.json5
         run: |
           # renovate: datasource=docker depName=renovate/renovate
-          VERSION="44.56.3"
+          VERSION="44.59.2"
           docker run --rm \
             -v "$GITHUB_WORKSPACE:/repo" \
             "renovate/renovate:$VERSION" \
