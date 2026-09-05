@@ -117,6 +117,13 @@
       matchUpdateTypes: ["digest"],
       addLabels: ["renovate-version-digest"],
     },
+    {
+      // No minimumReleaseAge: a pin installs nothing new, it just writes down
+      // the version a range was already resolving to.
+      matchUpdateTypes: ["pin"],
+      addLabels: ["renovate-version-pin"],
+      automerge: true,
+    },
 
     // =====================================================
     // Ecosystem classification labels
@@ -142,14 +149,16 @@
       addLabels: ["renovate-type-cicd"],
     },
 
+    // Commit metadata only. This rule carried `automerge: true` with no
+    // matchUpdateTypes, and sits after the per-update-type rules above, so it
+    // re-enabled automerge for github-actions MAJOR bumps that the major rule
+    // had deliberately left off. Dropping the key lets those rules decide:
+    // minor, patch and pin automerge, major does not.
     {
       matchManagers: ["github-actions"],
       semanticCommitType: "chore",
       semanticCommitScope: "github-actions",
       addLabels: ["renovate-type-cicd"],
-      // GitHub Actions use major version tags (v3 -> v4) for routine updates;
-      // auto-merge these when all checks pass.
-      automerge: true,
     },
 
     // Third-party actions are pinned to a commit digest, first-party ones are
