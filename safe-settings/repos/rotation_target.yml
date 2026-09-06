@@ -1,0 +1,26 @@
+# Per-repo override. Note that rulesets are NOT here: nested arrays concatenate
+# rather than merge, so a rule declared here is appended to the suborg's instead
+# of replacing it. rotation_target's ruleset lives in its own suborg file,
+# suborgs/00-rotation-target.yml.
+
+# release.yml declares `environment: release` on the job that tags and
+# publishes, but the environment did not exist. GitHub auto-creates a named
+# environment on first use with no protection rules, so the gate would have
+# looked present and let the first release straight through.
+environments:
+  - name: release
+    reviewers:
+      - id: 1577689
+        type: User
+    # Jimisola both triggers the release and is the only reviewer, so blocking
+    # self-review would make the gate unpassable rather than deliberate.
+    prevent_self_review: false
+
+  # Managed by GitHub for Pages, not by us, and declared only because the
+  # environments plugin deletes every environment it does not find here.
+  # Values mirror the live ones; docs.yml deploys the site from main.
+  - name: github-pages
+    deployment_branch_policy:
+      protected_branches: false
+      custom_branch_policies:
+        - main

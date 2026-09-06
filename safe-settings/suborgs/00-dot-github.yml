@@ -1,0 +1,56 @@
+# .github carries the org profile README and the shared Renovate preset. Its own
+# suborg exists so it can require a status check, which all.yml deliberately does
+# not do for repos in general.
+#
+# Same ordering rule as the other 00-* files: getSubOrgConfig returns the first
+# glob match in the order the contents API lists them, which is alphabetical, so
+# the prefix is what keeps all.yml's "*" from claiming this repo first.
+
+suborgrepos:
+  - .github
+
+# Same shared-object mutation workaround as all.yml.
+repository: {}
+
+rulesets:
+  - name: protect-main
+    target: branch
+    enforcement: active
+    conditions:
+      ref_name:
+        include:
+          - "~DEFAULT_BRANCH"
+          - "refs/heads/release/*"
+          - "refs/heads/hotfix/*"
+        exclude: []
+    bypass_actors:
+      - actor_id: 1
+        actor_type: OrganizationAdmin
+        bypass_mode: always
+    rules:
+      - type: deletion
+      - type: non_fast_forward
+      - type: required_linear_history
+      - type: pull_request
+        parameters:
+          required_approving_review_count: 1
+          dismiss_stale_reviews_on_push: true
+          require_code_owner_review: false
+          require_last_push_approval: false
+          required_review_thread_resolution: true
+
+      # The whole point of this file. Until .github#31 this repo required no
+      # check at all, so auto-merge had nothing to wait for and Renovate pull
+      # requests merged while the validator was still running -- #29 merged 23
+      # seconds before its own check finished.
+      #
+      # Safe to require only because .github#31 removed the workflow's paths
+      # filter. Requiring it before that lands blocks every pull request that
+      # touches neither renovate.json5 nor the workflow itself.
+      - type: required_status_checks
+        parameters:
+          strict_required_status_checks_policy: false
+          # Pinned to GitHub Actions -- see 00-rotation-target.yml.
+          required_status_checks:
+            - context: "Validate Renovate config"
+              integration_id: 15368

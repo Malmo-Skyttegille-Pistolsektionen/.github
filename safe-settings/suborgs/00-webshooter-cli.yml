@@ -1,0 +1,78 @@
+# webshooter-cli needs a protect-main of its own because its
+# required_status_checks differ from all.yml's, and a repos/ override cannot
+# supply them: nested arrays concatenate rather than merge, so a rule declared
+# there is appended to the suborg's instead of replacing it. Same reason
+# 00-rotation-target.yml is a whole copy rather than an override.
+#
+# This file previously existed for the opposite reason -- it carried NO rulesets
+# key, because the repo was private on a free plan where the rulesets API 403s
+# and safe-settings turns any API error into a non-zero exit. Making the repo
+# public removed that constraint, and with it the gap where this repo had
+# settings and labels managed but no branch protection.
+#
+# Read before all.yml -- suborg files are matched in the order the contents API
+# lists them, alphabetically, and the first glob match wins -- so webshooter-cli
+# takes this file and never reaches the "*" there. The "00-" prefix is what
+# holds that ordering; renaming this file above all.yml breaks it silently.
+#
+# Keep in step with all.yml's protect-main. Everything below is identical to it
+# except the required_status_checks rule.
+
+suborgrepos:
+  - webshooter-cli
+
+# Same shared-object mutation workaround as all.yml.
+repository: {}
+
+rulesets:
+  - name: protect-main
+    target: branch
+    enforcement: active
+    conditions:
+      ref_name:
+        include:
+          - "~DEFAULT_BRANCH"
+          - "refs/heads/release/*"
+          - "refs/heads/hotfix/*"
+        exclude: []
+    bypass_actors:
+      - actor_id: 1
+        actor_type: OrganizationAdmin
+        bypass_mode: always
+    rules:
+      - type: deletion
+      - type: non_fast_forward
+      - type: required_linear_history
+      - type: pull_request
+        parameters:
+          required_approving_review_count: 1
+          dismiss_stale_reviews_on_push: true
+          require_code_owner_review: false
+          require_last_push_approval: false
+          required_review_thread_resolution: true
+
+      - type: required_status_checks
+        parameters:
+          strict_required_status_checks_policy: false
+          # Pinned to GitHub Actions -- see 00-rotation-target.yml.
+          required_status_checks:
+            - context: "Lint and format check"
+              integration_id: 15368
+
+            # NOT "Test on Python 3.13". A matrix job's context always carries
+            # its matrix values -- GitHub appends them even for a single-entry
+            # matrix -- so requiring the matrix job would break the first time
+            # Python moves, and ci.yml already pins 3.14.7 for lint while the
+            # matrix sits at 3.13. `Tests` is the non-matrix aggregator added in
+            # webshooter-cli#14 for exactly this, asserting the matrix job's
+            # result under `if: always()` so a failure goes red rather than
+            # skipped. Observed both ways in webshooter-cli#14 and #15.
+            - context: "Tests"
+              integration_id: 15368
+
+            # Gates nothing on its own: `build` needs `test`, so when the tests
+            # fail this reports `skipped`, and GitHub counts a skipped required
+            # check as satisfied. It is `Tests` above that blocks. Listed anyway
+            # so a build failure with passing tests is caught.
+            - context: "Build package"
+              integration_id: 15368

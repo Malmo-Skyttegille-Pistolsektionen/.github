@@ -1,0 +1,9 @@
+restrictedRepos:
+  exclude:
+    # Every archived repo has to be listed here. safe-settings runs the
+    # repository plugin regardless of archived state, and the write against a
+    # read-only repo fails the whole sync -- not just that repo's part of it.
+    #
+    # .github-private held this config until it moved into .github, and is kept
+    # archived rather than deleted for its history.
+    - .github-private

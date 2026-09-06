@@ -1,0 +1,63 @@
+name: safe-settings
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "safe-settings/**"
+  schedule:
+    # Daily, not weekly: a repo created after a sync is unmanaged until the next
+    # one -- no labels, no ruleset, main wide open -- and nothing reports it.
+    # rotation_target sat that way for two days.
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      nop:
+        description: "Preview only, no writes (currently broken upstream, see README)"
+        type: boolean
+        default: false
+
+# Two syncs must never run at once. A full sync reads a repo's current state and
+# then writes the difference, so an overlapping run reads state the other one has
+# not finished writing and re-issues creates that have already happened -- which
+# GitHub rejects (422 already_exists) and safe-settings turns into a failed run.
+# Two PRs merged 18 seconds apart on 2026-08-25 did exactly that.
+#
+# Not cancel-in-progress: a half-applied sync is worse than a queued one.
+concurrency:
+  group: safe-settings
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: actions/checkout@v7.0.1
+        with:
+          repository: github/safe-settings
+          ref: 2.1.18
+          path: .safe-settings
+
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: "24.20.0"
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: .safe-settings
+
+      - name: Apply settings
+        run: npm run full-sync
+        working-directory: .safe-settings
+        env:
+          GH_ORG: Malmo-Skyttegille-Pistolsektionen
+          APP_ID: ${{ vars.SAFE_SETTINGS_APP_ID }}
+          PRIVATE_KEY: ${{ secrets.SAFE_SETTINGS_PRIVATE_KEY }}
+          ADMIN_REPO: .github
+          CONFIG_PATH: safe-settings
+          DEPLOYMENT_CONFIG_FILE: ${{ github.workspace }}/safe-settings/deployment-settings.yml
+          # safe-settings reads FULL_SYNC_NOP. There is no DRY_RUN variable --
+          # the name it replaces did nothing, so every run wrote for real.
+          FULL_SYNC_NOP: ${{ inputs.nop && 'true' || 'false' }}
