@@ -1,9 +1,12 @@
 restrictedRepos:
-  exclude:
-    # Every archived repo has to be listed here. safe-settings runs the
-    # repository plugin regardless of archived state, and the write against a
-    # read-only repo fails the whole sync -- not just that repo's part of it.
-    #
-    # .github-private held this config until it moved into .github, and is kept
-    # archived rather than deleted for its history.
-    - .github-private
+  # Nothing is excluded. Kept as an empty list rather than removed, because the
+  # workflow points DEPLOYMENT_CONFIG_FILE at this file and because the rule
+  # below is the one that has to be remembered.
+  #
+  # Every archived repo has to be listed here, and added in the same change that
+  # archives it. safe-settings runs the repository plugin regardless of archived
+  # state, and the write against a read-only repo fails the whole sync -- for
+  # every repo, not just that one. The same applies to a repo made private: the
+  # rulesets API 403s for private repos on a free plan, and the plugin 403s on
+  # its read before it writes anything.
+  exclude: []

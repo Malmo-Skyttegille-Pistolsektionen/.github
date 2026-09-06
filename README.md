@@ -53,9 +53,8 @@ Configuration files:
 
 ### Repos out of scope
 
-| Repo | Why |
-|------|-----|
-| `.github-private` | Archived — read-only, and safe-settings fails the sync when it can't write |
+Nothing is out of scope today — `safe-settings/deployment-settings.yml` has an
+empty exclude list. The rule that matters is when to add to it, below.
 
 Archived or private repos have to be listed there too — see "Archiving or making
 a repo private" below. None are excluded today: `webshooter` and the six
