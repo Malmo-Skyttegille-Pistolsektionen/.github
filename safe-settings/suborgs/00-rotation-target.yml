@@ -1,0 +1,116 @@
+# rotation_target needs a protect-main that differs from all.yml's, and it has
+# to be a whole separate copy rather than an override.
+#
+# A repos/ override cannot do it. mergeArrayBy matches the ruleset by `name`
+# and deep-merges the matched entry, but mergeDeep.js passes `this.github`
+# where deepmerge expects its options, so arrayMerge is undefined and the
+# default applies: nested arrays CONCATENATE. Declaring a pull_request rule in
+# a repo file on top of all.yml's sent GitHub two of them and the PUT was
+# rejected 422, taking the whole ruleset with it. (The concatenation is proven;
+# whether GitHub would reject a duplicate `type` on its own is not, since that
+# request was malformed for a second reason. Copying the ruleset sidesteps the
+# question rather than betting on it.)
+#
+# Read before all.yml -- suborg files are matched in the order the contents API
+# lists them, alphabetically, and the first glob match wins -- so rotation_target
+# takes this file and never reaches the "*" there.
+#
+# Keep in step with all.yml's protect-main. Everything below is identical to it
+# except the required_status_checks rule, which is the only reason this file
+# still exists as a copy.
+
+suborgrepos:
+  - rotation_target
+
+# Same shared-object mutation workaround as all.yml.
+repository: {}
+
+rulesets:
+  - name: protect-main
+    target: branch
+    enforcement: active
+    conditions:
+      ref_name:
+        include:
+          - "~DEFAULT_BRANCH"
+          - "refs/heads/release/*"
+          - "refs/heads/hotfix/*"
+        exclude: []
+    bypass_actors:
+      # No Renovate bypass -- see all.yml.
+      - actor_id: 1
+        actor_type: OrganizationAdmin
+        bypass_mode: always
+    rules:
+      - type: deletion
+      - type: non_fast_forward
+      - type: required_linear_history
+      - type: pull_request
+        parameters:
+          # 1, matching all.yml and every other org. Renovate's pull requests
+          # are approved by the renovate-approve App, so the automerge path is
+          # unaffected.
+          #
+          # The cost is on human pull requests: a single author cannot approve
+          # their own, and a stack's merge box renders no bypass affordance, so
+          # every layer needs the merge-async endpoint as an OrganizationAdmin
+          # to land. Accepted deliberately -- uniformity across the orgs was
+          # judged worth the override.
+          required_approving_review_count: 1
+          dismiss_stale_reviews_on_push: true
+          require_code_owner_review: false
+          require_last_push_approval: false
+          required_review_thread_resolution: true
+
+      # What replaces the approval as the merge gate. Only safe to require
+      # because rotation_target#184 removed the paths: filters -- a required
+      # check that is skipped never reports, and blocks the PR forever.
+      - type: required_status_checks
+        parameters:
+          # Not strict: requiring the branch to be current before merging means
+          # each merge in a stack invalidates the one above it.
+          strict_required_status_checks_policy: false
+          # Every context is pinned to integration_id 15368, GitHub Actions.
+          # A context is just a string, so an unpinned entry is satisfied by
+          # whichever app reports that name first.
+          required_status_checks:
+            - context: "firmware (esp32s3)"
+              integration_id: 15368
+            - context: "host tests"
+              integration_id: 15368
+            - context: "host tests (asan+ubsan)"
+              integration_id: 15368
+            - context: "firmware boot smoke"
+              integration_id: 15368
+            # Quoted because the commas would otherwise be read as a list.
+            - context: "typecheck, lint, test, build"
+              integration_id: 15368
+            - context: "webapp end-to-end"
+              integration_id: 15368
+            - context: "contract and program validation"
+              integration_id: 15368
+            - context: "pre-commit"
+              integration_id: 15368
+            - context: "workflow lint"
+              integration_id: 15368
+            - context: "conventional commit title"
+              integration_id: 15368
+
+            # Added once each had been observed reporting on every pull request,
+            # which is the property the note above makes load-bearing.
+            #
+            # Runs clang-tidy today, but is NOT named for it: rotation_target#225
+            # leaves open whether cppcheck joins it, and a name this list depends
+            # on must not change when the tool does. rotation_target/AGENTS.md
+            # carries the rule. Closes #225's own last point -- a check that runs
+            # but cannot block is one somebody learns to scroll past. The job has
+            # no `if:`, so it reports on a docs-only pull request too.
+            - context: "firmware static analysis"
+              integration_id: 15368
+            # Guards the additive-contract rule in AGENTS.md, which is otherwise
+            # prose that nothing enforces. This job IS conditional --
+            # `if: github.event_name == 'pull_request'` -- but that is true
+            # exactly when a required check must report, and false only for push
+            # and for release.yml's workflow_call, neither of which one gates.
+            - context: "breaking change detection"
+              integration_id: 15368

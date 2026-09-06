@@ -1,0 +1,59 @@
+# Read after the 00-* files: suborg files are matched in the order the contents
+# API lists them, alphabetically, and the first glob match wins. So "*" below
+# does not capture the repos those files claim. See them for why they opt out.
+suborgrepos:
+  - "*"
+  # safe-settings matches with minimatch, where "*" does not match a leading dot.
+  # Without this, .github matches no suborg and silently gets no rulesets --
+  # org-level settings and labels still apply, so the sync stays green.
+  - ".*"
+
+# Workaround for safe-settings shared-object mutation bug:
+# Without a suborg entry, all repos share the same repoConfig reference via
+# Object.assign() mutation. Adding a suborg causes mergeDeep({}, ...) which
+# creates a fresh object per repo, giving each repo its correct name.
+repository: {}
+
+# Defined at suborg scope (not org-level settings.yml) so safe-settings
+# creates these as per-repo rulesets via /repos/{owner}/{repo}/rulesets.
+# Organization rulesets require GitHub Team; repository rulesets are free.
+#
+# safe-settings deletes any repository ruleset it does not find in the config,
+# so a ruleset that should survive has to be declared. Nothing relies on that
+# today: webshooter-cli's hand-made `deployable-branches` was the last unlisted
+# one, and requiring checks there replaces it with this protect-main.
+rulesets:
+  - name: protect-main
+    target: branch
+    enforcement: active
+    conditions:
+      ref_name:
+        include:
+          - "~DEFAULT_BRANCH"
+          - "refs/heads/release/*"
+          - "refs/heads/hotfix/*"
+        exclude: []
+    bypass_actors:
+      # No Renovate bypass. It was here so Renovate's automerged pull requests
+      # could land without a human approval; the renovate-approve App (id 7394,
+      # installed org-wide) supplies that approval instead, which keeps Renovate
+      # subject to the same rules as everyone else.
+      - actor_id: 1
+        actor_type: OrganizationAdmin
+        bypass_mode: always
+    rules:
+      - type: deletion
+      - type: non_fast_forward
+      # Redundant while merges are squash-only, but a ruleset that does not
+      # depend on a repo setting staying put is one less thing to reason about.
+      - type: required_linear_history
+      - type: pull_request
+        parameters:
+          required_approving_review_count: 1
+          dismiss_stale_reviews_on_push: true
+          require_code_owner_review: false
+          require_last_push_approval: false
+          # Required by the repository-ruleset pull_request schema; omitting
+          # it fails validation with "data matches no possible input".
+          # All review threads must be resolved before a PR can be merged.
+          required_review_thread_resolution: true
