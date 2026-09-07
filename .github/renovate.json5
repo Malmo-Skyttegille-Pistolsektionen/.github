@@ -42,8 +42,21 @@
     enabled: true,
   },
 
+  // The one exception to soaking updates before automerge. lockFileMaintenance
+  // hands regeneration to the package manager, so Renovate never sees the
+  // individual transitive versions that come back -- minimumReleaseAge has
+  // nothing to apply to here. The choice was automerge with no soak or no
+  // automerge at all; CI is the gate that remains, the same one every other
+  // automerged update passes. What the exception costs: with rangeStrategy
+  // "pin" above, these PRs are the only path by which a transitive dependency
+  // ever changes.
+  //
+  // Its own updateType, matched by none of the version rules below -- so the
+  // label is declared here rather than with the rest of that family.
   lockFileMaintenance: {
     enabled: true,
+    automerge: true,
+    addLabels: ["renovate-version-lockfile"],
   },
 
   vulnerabilityAlerts: {
@@ -94,6 +107,8 @@
 
     // =====================================================
     // Version classification labels
+    //
+    // Five of the six updateTypes; lockFileMaintenance is configured above.
     // =====================================================
 
     {

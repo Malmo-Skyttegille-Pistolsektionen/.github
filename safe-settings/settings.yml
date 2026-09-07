@@ -116,6 +116,9 @@ labels:
     - name: renovate-version-pin
       color: "d4c5f9"
       description: "Pin an existing range to an exact version"
+    - name: renovate-version-lockfile
+      color: "f9d0c4"
+      description: "Lock file regenerated (transitive dependencies)"
 
   exclude:
     - "^release"
