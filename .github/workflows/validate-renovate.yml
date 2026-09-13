@@ -23,7 +23,7 @@ jobs:
       - name: Validate .github/renovate.json5
         run: |
           # renovate: datasource=docker depName=renovate/renovate
-          VERSION="44.75.2"
+          VERSION="44.79.0"
           docker run --rm \
             -v "$GITHUB_WORKSPACE:/repo" \
             "renovate/renovate:$VERSION" \
