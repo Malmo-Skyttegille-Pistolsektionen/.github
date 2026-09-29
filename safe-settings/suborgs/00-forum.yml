@@ -1,0 +1,10 @@
+# forum is private, and on the free plan the rulesets API 403s for private repos,
+# which fails the whole sync. This suborg claims it before all.yml's "*" and has
+# no rulesets key: settings and labels managed, branch protection not -- what
+# 00-webshooter-cli.yml was while that repo was private.
+
+suborgrepos:
+  - forum
+
+# Same shared-object mutation workaround as all.yml.
+repository: {}
