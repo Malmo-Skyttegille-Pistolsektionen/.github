@@ -89,7 +89,8 @@ edit, with nothing linking the failure back to the change that caused it.
 The alternative for a private repo that should stay managed is its own suborg
 file with no `rulesets:` key — settings and labels managed, branch protection
 not. That is what `suborgs/00-webshooter-cli.yml` was until the repo was made
-public. It does not help an archived repo, which cannot be written to at all.
+public, and what `suborgs/00-forum.yml` is today. It does not help an archived
+repo, which cannot be written to at all.
 
 ### Why rulesets live in `suborgs/`, not `settings.yml`
 
