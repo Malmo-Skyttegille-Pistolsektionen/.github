@@ -1,4 +1,4 @@
-# rotation_target needs a protect-main that differs from all.yml's, and it has
+# revolve_now needs a protect-main that differs from all.yml's, and it has
 # to be a whole separate copy rather than an override.
 #
 # A repos/ override cannot do it. mergeArrayBy matches the ruleset by `name`
@@ -12,7 +12,7 @@
 # question rather than betting on it.)
 #
 # Read before all.yml -- suborg files are matched in the order the contents API
-# lists them, alphabetically, and the first glob match wins -- so rotation_target
+# lists them, alphabetically, and the first glob match wins -- so revolve_now
 # takes this file and never reaches the "*" there.
 #
 # Keep in step with all.yml's protect-main. Everything below is identical to it
@@ -20,7 +20,7 @@
 # still exists as a copy.
 
 suborgrepos:
-  - rotation_target
+  - revolve_now
 
 # Same shared-object mutation workaround as all.yml.
 repository: {}
@@ -63,7 +63,7 @@ rulesets:
           required_review_thread_resolution: true
 
       # What replaces the approval as the merge gate. Only safe to require
-      # because rotation_target#184 removed the paths: filters -- a required
+      # because revolve_now#184 removed the paths: filters -- a required
       # check that is skipped never reports, and blocks the PR forever.
       - type: required_status_checks
         parameters:
@@ -99,9 +99,9 @@ rulesets:
             # Added once each had been observed reporting on every pull request,
             # which is the property the note above makes load-bearing.
             #
-            # Runs clang-tidy today, but is NOT named for it: rotation_target#225
+            # Runs clang-tidy today, but is NOT named for it: revolve_now#225
             # leaves open whether cppcheck joins it, and a name this list depends
-            # on must not change when the tool does. rotation_target/AGENTS.md
+            # on must not change when the tool does. revolve_now/AGENTS.md
             # carries the rule. Closes #225's own last point -- a check that runs
             # but cannot block is one somebody learns to scroll past. The job has
             # no `if:`, so it reports on a docs-only pull request too.

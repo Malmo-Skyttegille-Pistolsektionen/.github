@@ -1,7 +1,7 @@
 # Per-repo override. Note that rulesets are NOT here: nested arrays concatenate
 # rather than merge, so a rule declared here is appended to the suborg's instead
-# of replacing it. rotation_target's ruleset lives in its own suborg file,
-# suborgs/00-rotation-target.yml.
+# of replacing it. revolve_now's ruleset lives in its own suborg file,
+# suborgs/00-revolve-now.yml.
 
 # release.yml declares `environment: release` on the job that tags and
 # publishes, but the environment did not exist. GitHub auto-creates a named

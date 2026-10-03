@@ -3,15 +3,15 @@
 The pistol section of Malmö Skyttegille. This organization holds the software we
 build for our own use on the range.
 
-## Rotation Target
+## Revolve Now
 
-[**rotation_target**](https://github.com/Malmo-Skyttegille-Pistolsektionen/rotation_target)
+[**revolve_now**](https://github.com/Malmo-Skyttegille-Pistolsektionen/revolve_now)
 runs timed shooting programs on a rotating target system. An ESP32-S3 board turns
 the targets face-on and edge-on to a program and plays the spoken range commands
 over an amplifier. A web app — served by the board itself over WiFi — starts and
 stops programs, follows a run live, and manages the stored programs and audio.
 
-📖 **[Documentation](https://malmo-skyttegille-pistolsektionen.github.io/rotation_target/)**
+📖 **[Documentation](https://malmo-skyttegille-pistolsektionen.github.io/revolve_now/)**
 
 > [!WARNING]
 > It moves steel on a live firing range, and it moves it on a timer. A target
@@ -20,7 +20,7 @@ stops programs, follows a run live, and manages the stored programs and audio.
 > device**, and the range's own rules and range commands govern the line.
 >
 > Read the safety warning in the
-> [project README](https://github.com/Malmo-Skyttegille-Pistolsektionen/rotation_target#readme)
+> [project README](https://github.com/Malmo-Skyttegille-Pistolsektionen/revolve_now#readme)
 > before installing or operating it.
 
 ## About this organization

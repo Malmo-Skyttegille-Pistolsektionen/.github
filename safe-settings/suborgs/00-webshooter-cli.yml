@@ -2,7 +2,7 @@
 # required_status_checks differ from all.yml's, and a repos/ override cannot
 # supply them: nested arrays concatenate rather than merge, so a rule declared
 # there is appended to the suborg's instead of replacing it. Same reason
-# 00-rotation-target.yml is a whole copy rather than an override.
+# 00-revolve-now.yml is a whole copy rather than an override.
 #
 # This file previously existed for the opposite reason -- it carried NO rulesets
 # key, because the repo was private on a free plan where the rulesets API 403s
@@ -54,7 +54,7 @@ rulesets:
       - type: required_status_checks
         parameters:
           strict_required_status_checks_policy: false
-          # Pinned to GitHub Actions -- see 00-rotation-target.yml.
+          # Pinned to GitHub Actions -- see 00-revolve-now.yml.
           required_status_checks:
             - context: "Lint and format check"
               integration_id: 15368

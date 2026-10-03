@@ -50,7 +50,7 @@ rulesets:
       - type: required_status_checks
         parameters:
           strict_required_status_checks_policy: false
-          # Pinned to GitHub Actions -- see 00-rotation-target.yml.
+          # Pinned to GitHub Actions -- see 00-revolve-now.yml.
           required_status_checks:
             - context: "Validate Renovate config"
               integration_id: 15368
