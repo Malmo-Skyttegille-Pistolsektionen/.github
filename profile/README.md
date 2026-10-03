@@ -3,7 +3,7 @@
 The pistol section of Malmö Skyttegille. This organization holds the software we
 build for our own use on the range.
 
-## Revolve Now
+## <img src="https://raw.githubusercontent.com/Malmo-Skyttegille-Pistolsektionen/revolve_now/main/webapp/public/revolve-now-logo.svg" height="36" alt="Revolve Now">
 
 [**revolve_now**](https://github.com/Malmo-Skyttegille-Pistolsektionen/revolve_now)
 runs timed shooting programs on a rotating target system. An ESP32-S3 board turns
