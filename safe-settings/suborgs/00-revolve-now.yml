@@ -114,3 +114,7 @@ rulesets:
             # and for release.yml's workflow_call, neither of which one gates.
             - context: "breaking change detection"
               integration_id: 15368
+            # Fails a `BREAKING CHANGE:` footer in a branch commit body that the
+            # title does not declare with `!` (revolve_now#453). No `if:`.
+            - context: "release bump matches title"
+              integration_id: 15368
