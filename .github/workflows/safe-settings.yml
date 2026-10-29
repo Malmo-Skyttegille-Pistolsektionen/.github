@@ -31,6 +31,8 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    # Holds the App key; see safe-settings/repos/.github.yml.
+    environment: safe-settings
     steps:
       - uses: actions/checkout@v7.0.1
 
