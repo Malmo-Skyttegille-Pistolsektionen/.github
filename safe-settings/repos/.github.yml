@@ -1,0 +1,11 @@
+# Per-repo override for .github itself.
+
+# The sync job holds SAFE_SETTINGS_PRIVATE_KEY, an App key with admin on every
+# repo. As an environment secret restricted to main it reaches no workflow run
+# from another branch. No reviewer: that would hold the nightly sync for approval.
+environments:
+  - name: safe-settings
+    deployment_branch_policy:
+      protected_branches: false
+      custom_branch_policies:
+        - main
